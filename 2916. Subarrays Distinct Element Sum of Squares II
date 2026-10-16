@@ -1,0 +1,55 @@
+
+class Solution {
+    static final int MOD = 1_000_000_007;
+    long[] s, q, lazy;
+    int n;
+
+    public int sumCounts(int[] nums) {
+        n = nums.length;
+        s = new long[4 * n];
+        q = new long[4 * n];
+        lazy = new long[4 * n];
+
+        int[] last = new int[100001];
+        java.util.Arrays.fill(last, -1);
+        long ans = 0;
+
+        for (int i = 0; i < n; i++) {
+            int p = last[nums[i]];
+            last[nums[i]] = i;
+            update(1, 0, n - 1, p + 1, i);
+            ans = (ans + q[1]) % MOD;
+        }
+        return (int) ans;
+    }
+
+    void apply(int k, int l, int r, long v) {
+        long len = r - l + 1L;
+        q[k] = (q[k] + 2 * v % MOD * s[k]
+                + v * v % MOD * len) % MOD;
+        s[k] = (s[k] + v * len) % MOD;
+        lazy[k] += v;
+    }
+
+    void push(int k, int l, int r) {
+        if (lazy[k] == 0 || l == r) return;
+        int m = (l + r) / 2;
+        apply(k * 2, l, m, lazy[k]);
+        apply(k * 2 + 1, m + 1, r, lazy[k]);
+        lazy[k] = 0;
+    }
+
+    void update(int k, int l, int r, int a, int b) {
+        if (b < l || r < a) return;
+        if (a <= l && r <= b) {
+            apply(k, l, r, 1);
+            return;
+        }
+        push(k, l, r);
+        int m = (l + r) / 2;
+        update(k * 2, l, m, a, b);
+        update(k * 2 + 1, m + 1, r, a, b);
+        s[k] = (s[k * 2] + s[k * 2 + 1]) % MOD;
+        q[k] = (q[k * 2] + q[k * 2 + 1]) % MOD;
+    }
+}
